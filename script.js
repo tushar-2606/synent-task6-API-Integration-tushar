@@ -1,61 +1,124 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('search-form');
   const usernameInput = document.getElementById('username');
-  const result = document.getElementById('result');
+  const searchBtn = document.getElementById('search-btn');
+  const loadingElement = document.getElementById('loading');
+  const errorElement = document.getElementById('error');
+  const errorText = document.getElementById('error-text');
+  const resultSection = document.getElementById('result');
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = usernameInput.value.trim();
-    if (!username) return;
+  // Event listener for search button
+  searchBtn.addEventListener('click', handleSearch);
 
-    const profile = await fetchProfile(username);
-    renderProfile(profile);
+  // Event listener for Enter key
+  usernameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   });
 
-  async function fetchProfile(username) {
-    const res = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}`);
-    if (!res.ok) throw new Error('Failed to fetch');
-    return res.json();
+  function handleSearch() {
+    const username = usernameInput.value.trim();
+
+    if (!username) {
+      showError('Please enter a GitHub username');
+      return;
+    }
+
+    fetchAndDisplayProfile(username);
   }
 
-  function renderProfile(data) {
-    result.innerHTML = '';
+  async function fetchAndDisplayProfile(username) {
+    showLoading();
+    hideError();
+    hideResult();
 
-    const card = document.createElement('div');
-    card.className = 'profile-card';
+    try {
+      const profile = await fetchGitHubProfile(username);
+      displayProfile(profile);
+      showResult();
+    } catch (error) {
+      showError(error.message);
+    }
+  }
 
-    const header = document.createElement('div');
-    header.className = 'profile-header';
+  async function fetchGitHubProfile(username) {
+    const url = `https://api.github.com/users/${encodeURIComponent(username)}`;
 
-    const img = document.createElement('img');
-    img.className = 'avatar';
-    img.src = data.avatar_url;
-    img.alt = `${data.login} avatar`;
+    try {
+      const response = await fetch(url);
 
-    const meta = document.createElement('div');
-    meta.className = 'meta';
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error(`User "${username}" not found on GitHub`);
+        } else if (response.status === 403) {
+          throw new Error('API rate limit exceeded. Please try again later');
+        } else {
+          throw new Error('Failed to fetch user profile');
+        }
+      }
 
-    const name = document.createElement('h2');
-    name.className = 'name';
-    name.textContent = data.name || '';
+      return await response.json();
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error('Network error. Please check your connection');
+      }
+      throw error;
+    }
+  }
 
-    const uname = document.createElement('p');
-    uname.className = 'username';
-    uname.textContent = `@${data.login}`;
+  function displayProfile(data) {
+    // Avatar
+    const avatarImg = document.getElementById('avatar');
+    avatarImg.src = data.avatar_url;
+    avatarImg.alt = `${data.login} avatar`;
 
-    meta.appendChild(name);
-    meta.appendChild(uname);
+    // Name
+    const nameElement = document.getElementById('name');
+    nameElement.textContent = data.name || 'Not provided';
 
-    header.appendChild(img);
-    header.appendChild(meta);
+    // Username
+    const usernameElement = document.getElementById('login');
+    usernameElement.textContent = `@${data.login}`;
 
-    const bio = document.createElement('p');
-    bio.className = 'bio';
-    bio.textContent = data.bio || '';
+    // Bio
+    const bioElement = document.getElementById('bio');
+    bioElement.textContent = data.bio || 'No bio available';
 
-    card.appendChild(header);
-    card.appendChild(bio);
+    // Stats
+    document.getElementById('followers').textContent = data.followers || '0';
+    document.getElementById('following').textContent = data.following || '0';
+    document.getElementById('repos').textContent = data.public_repos || '0';
 
-    result.appendChild(card);
+    // GitHub link
+    const githubLink = document.getElementById('github-link');
+    githubLink.href = data.html_url;
+  }
+
+  function showLoading() {
+    loadingElement.style.display = 'block';
+    errorElement.style.display = 'none';
+  }
+
+  function hideLoading() {
+    loadingElement.style.display = 'none';
+  }
+
+  function showError(message) {
+    errorText.textContent = message;
+    errorElement.style.display = 'block';
+    loadingElement.style.display = 'none';
+  }
+
+  function hideError() {
+    errorElement.style.display = 'none';
+  }
+
+  function showResult() {
+    resultSection.style.display = 'block';
+    loadingElement.style.display = 'none';
+  }
+
+  function hideResult() {
+    resultSection.style.display = 'none';
   }
 });

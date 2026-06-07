@@ -7,16 +7,78 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="container">
-    <h1 class="title">GitHub Profile Finder</h1>
+  <div class="container">
+    <header class="header">
+      <h1 class="title">GitHub Profile Finder</h1>
+      <p class="description">Search for any GitHub user and view their profile information instantly</p>
+    </header>
 
-    <form id="search-form" class="search" aria-label="Search GitHub user">
-      <input type="text" id="username" name="username" placeholder="Enter GitHub username" autocomplete="off">
-      <button type="submit" id="search-btn">Search</button>
-    </form>
+    <main class="main-content">
+      <!-- Search Section -->
+      <section class="search-section">
+        <div class="form-group">
+          <label for="username" class="label">GitHub Username</label>
+          <div class="search-box">
+            <input 
+              type="text" 
+              id="username" 
+              class="input" 
+              placeholder="e.g., torvalds, gvanrossum" 
+              autocomplete="off"
+            >
+            <button type="button" id="search-btn" class="btn">Search</button>
+          </div>
+        </div>
+      </section>
 
-    <section id="result" class="result" aria-live="polite"></section>
-  </main>
+      <!-- Loading Message -->
+      <div id="loading" class="message loading-message" style="display: none;">
+        <p>Loading profile...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div id="error" class="message error-message" style="display: none;">
+        <p id="error-text"></p>
+      </div>
+
+      <!-- Result Section -->
+      <section id="result" class="result-section" style="display: none;">
+        <div class="profile-card">
+          <div class="profile-header">
+            <img id="avatar" class="avatar" src="" alt="Profile avatar">
+            <div class="profile-info">
+              <h2 id="name" class="profile-name"></h2>
+              <p id="login" class="profile-username"></p>
+              <p id="bio" class="profile-bio"></p>
+            </div>
+          </div>
+
+          <div class="profile-stats">
+            <div class="stat">
+              <span class="stat-value" id="followers">0</span>
+              <span class="stat-label">Followers</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value" id="following">0</span>
+              <span class="stat-label">Following</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value" id="repos">0</span>
+              <span class="stat-label">Public Repos</span>
+            </div>
+          </div>
+
+          <div class="profile-links">
+            <a id="github-link" href="" target="_blank" class="link">View on GitHub</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Made by <strong>Tushar</strong> | GitHub Profile Finder 2026</p>
+    </footer>
+  </div>
 
   <script src="script.js"></script>
 </body>
