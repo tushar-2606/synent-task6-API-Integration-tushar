@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showResult();
     } catch (error) {
       showError(error.message);
+      clearProfileData();
     }
   }
 
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!response.ok) {
         if (response.status === 404) {
-          throw new Error(`User "${username}" not found on GitHub`);
+          throw new Error('User not found');
         } else if (response.status === 403) {
           throw new Error('API rate limit exceeded. Please try again later');
         } else {
@@ -59,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       return await response.json();
     } catch (error) {
-      if (error instanceof TypeError) {
+      if (error instanceof TypeError || error.name === 'TypeError') {
         throw new Error('Network error. Please check your connection');
       }
       throw error;
@@ -94,9 +95,22 @@ document.addEventListener('DOMContentLoaded', () => {
     githubLink.href = data.html_url;
   }
 
+  function clearProfileData() {
+    document.getElementById('avatar').src = '';
+    document.getElementById('avatar').alt = 'Profile avatar';
+    document.getElementById('name').textContent = '';
+    document.getElementById('login').textContent = '';
+    document.getElementById('bio').textContent = '';
+    document.getElementById('followers').textContent = '0';
+    document.getElementById('following').textContent = '0';
+    document.getElementById('repos').textContent = '0';
+    document.getElementById('github-link').href = '#';
+  }
+
   function showLoading() {
     loadingElement.style.display = 'block';
     errorElement.style.display = 'none';
+    hideResult();
   }
 
   function hideLoading() {
@@ -107,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     errorText.textContent = message;
     errorElement.style.display = 'block';
     loadingElement.style.display = 'none';
+    hideResult();
   }
 
   function hideError() {
